@@ -1,9 +1,9 @@
 
-import { Cart } from './components/base/components/Cart';
-import { ProductList } from './components/base/components/ProductList';
+import { Cart } from './components/base/Models/Cart';
+import { ProductList } from './components/base/Models/ProductList';
 import './scss/styles.scss';
 import { apiProducts } from './utils/data';
-import { ApiClient } from './components/base/Api';
+import { ApiClient } from './components/ApiClient';
 import { Api } from './components/base/Api';
 import { API_URL } from './utils/constants'; 
 import { IProductsResponse as ProductResponse } from './types';
