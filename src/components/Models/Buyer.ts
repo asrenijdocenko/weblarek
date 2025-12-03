@@ -1,5 +1,5 @@
-import { IBuyer, TPayment } from "../../../types";
-import { TError } from "../../../types";
+import { IBuyer, TPayment } from "../../types";
+import { IOrderData } from "../../types";
 
 class Buyer {
     protected  payment: TPayment = '';
@@ -30,9 +30,34 @@ class Buyer {
         this. phone = '';
     }
 
-    validateData(): TError {
-        const errors: TError = {};
-        return errors
+    validateOrderData(orderData: IOrderData): string[] {
+        const errors: string[] = [];
+        
+        if (!orderData.payment || (orderData.payment !== 'online' && orderData.payment !== 'offline')) {
+            errors.push('Не выбран способ оплаты или выбран неверный способ');
+        }
+        
+        if (!orderData.email || !orderData.email.includes('@')) {
+            errors.push('Неверный email');
+        }
+        
+        if (!orderData.phone || orderData.phone.trim().length < 5) {
+            errors.push('Неверный телефон');
+        }
+        
+        if (!orderData.address || orderData.address.trim().length === 0) {
+            errors.push('Не указан адрес');
+        }
+        
+        if (!orderData.total || orderData.total <= 0) {
+            errors.push('Неверная сумма заказа');
+        }
+        
+        if (!orderData.items || orderData.items.length === 0) {
+            errors.push('Корзина пуста');
+        }
+        
+        return errors;
     }
 }
 
