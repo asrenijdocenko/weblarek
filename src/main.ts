@@ -10,7 +10,7 @@ import { API_URL } from './utils/constants';
 import { IOrderData } from './types';
 
 
-
+console.log('---------------Проверка методов модели ProductList---------------');
 // Проверка методов ProductList
 const productsModel = new ProductList();
 productsModel.saveItems(apiProducts.items);
@@ -20,7 +20,7 @@ console.log('Полученный товар по id: ', productsModel.getItem(p
 productsModel.savePreviewItem(productsModel.getItems()[0]);
 console.log('Предпросмотр товара: ', productsModel.getPreviewItem());
 
-
+console.log('---------------Проверка методов Cart---------------');
 // Проверка методов Cart
 const cartModel = new Cart();
 cartModel.addItem(productsModel.getItems()[0]);
@@ -35,6 +35,7 @@ cartModel.clearCart();
 console.log('Товары в корзине после очистки: ', cartModel.getItems());
 
 
+console.log('---------------Проверка методов Buyer---------------');
 // Проверка методов Buyer
 const buyerModel = new Buyer();
 buyerModel.saveData({
@@ -63,8 +64,7 @@ console.log('Ошибки при валидации:', emptyBuer.validateByerInf
     
 
 
-console.log()
-
+console.log('---------------Проверка методов ApiClient---------------');
 const api = new Api(API_URL);
 const apiClient = new ApiClient(api);
 
