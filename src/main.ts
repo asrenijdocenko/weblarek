@@ -7,34 +7,63 @@ import { apiProducts } from './utils/data';
 import { ApiClient } from './components/base/ApiClient';
 import { Api } from './components/base/Api';
 import { API_URL } from './utils/constants'; 
-import { IProductsResponse as ProductResponse, IOrderData } from './types';
+import { IOrderData } from './types';
 
 
 
 // Проверка методов ProductList
-const ProductsModel = new ProductList();
-ProductsModel.saveItems(apiProducts.items);
-console.log('Массив товаров из каталога: ', ProductsModel.getItems());
-ProductsModel.getItem(ProductsModel.getItems()[0].id);
-console.log('Полученный товар по id: ', ProductsModel.getItem(ProductsModel.getItems()[0].id));
-ProductsModel.savePreviewItem(ProductsModel.getItems()[0]);
-console.log('Предпросмотр товара: ', ProductsModel.getPreviewItem());
+const productsModel = new ProductList();
+productsModel.saveItems(apiProducts.items);
+console.log('Массив товаров из каталога: ', productsModel.getItems());
+productsModel.getItem(    productsModel.getItems()[0].id);
+console.log('Полученный товар по id: ', productsModel.getItem(productsModel.getItems()[0].id));
+productsModel.savePreviewItem(productsModel.getItems()[0]);
+console.log('Предпросмотр товара: ', productsModel.getPreviewItem());
 
 
 // Проверка методов Cart
-const CartModel = new Cart();
-CartModel.addItem(ProductsModel.getItems()[0]);
-console.log('Товары в корзине: ', CartModel.getItems());
-CartModel.removeItem(ProductsModel.getItems()[0]);
-console.log('Товары в корзине после удаления: ', CartModel.getItems());
-CartModel.addItem(ProductsModel.getItems()[1]);
-console.log('Общая стоимость товаров в корзине: ', CartModel.getTotalPrice());
-console.log('Общее количество товаров в корзине: ', CartModel.getTotalCount());
-console.log('Проверка наличия товара в корзине по id: ', CartModel.checkItemInCart(ProductsModel.getItems()[1].id));
-CartModel.clearCart();
-console.log('Товары в корзине после очистки: ', CartModel.getItems());
+const cartModel = new Cart();
+cartModel.addItem(productsModel.getItems()[0]);
+console.log('Товары в корзине: ', cartModel.getItems());
+cartModel.removeItem(productsModel.getItems()[0]);
+console.log('Товары в корзине после удаления: ', cartModel.getItems());
+cartModel.addItem(productsModel.getItems()[1]);
+console.log('Общая стоимость товаров в корзине: ', cartModel.getTotalPrice());
+console.log('Общее количество товаров в корзине: ', cartModel.getTotalCount());
+console.log('Проверка наличия товара в корзине по id: ', cartModel.checkItemInCart(productsModel.getItems()[1].id));
+cartModel.clearCart();
+console.log('Товары в корзине после очистки: ', cartModel.getItems());
 
 
+// Проверка методов Buyer
+const buyerModel = new Buyer();
+buyerModel.saveData({
+    payment: 'online',
+    address: 'Test Address',
+    email: 'test@test.ru',
+    phone: '+79999999999'
+});
+
+const emptyBuer = new Buyer;
+buyerModel.saveData({
+    payment: '',
+    address: '',
+    email: '',
+    phone: ''
+});
+
+if(buyerModel.getData()) console.log('данные покупателя получены, ', buyerModel.getData());
+else console.log('ошибка получения данных:', buyerModel.validateByerInfo());
+
+buyerModel.clearData();
+console.log('Данные покупателя после очистки: ', buyerModel.getData());
+
+console.log('Ошибки при валидации:', emptyBuer.validateByerInfo());
+
+    
+
+
+console.log()
 
 const api = new Api(API_URL);
 const apiClient = new ApiClient(api);
@@ -59,18 +88,6 @@ const testOrder: IOrderData = {
     total: 1450,
     items: ['c101ab44-ed99-4a54-990d-47aa2bb4e7d9']
 };
-
-
-const validationErrors = new Buyer().validateOrderData(testOrder);
-
-if (validationErrors.length > 0) {
-
-    console.error('Ошибки валидации:');
-    validationErrors.forEach(error => console.error(error));
-
-} else {
     
     apiClient.createOrder(testOrder)
         .then(result => console.log('Результат заказа:', result))
-        .catch(error => console.error('Ошибка createOrder:', error));
-}

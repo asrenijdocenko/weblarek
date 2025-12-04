@@ -3,7 +3,6 @@ import {
     IProductsResponse,
     IOrderData, 
     IOrderSuccessResponse,
-    IOrderErrorResponse,
     TOrderResult 
 } from '../../types';
 
@@ -31,13 +30,9 @@ export class ApiClient {
 
             const response = await this._api.post('/order', orderData);
             
-            const result = response as IOrderSuccessResponse | IOrderErrorResponse;
+            const result = response as IOrderSuccessResponse;
+            return result;
             
-            if ('error' in result) {
-                return result as IOrderErrorResponse;
-            } else {
-                return result as IOrderSuccessResponse;
-            }
         } catch (error) {
             console.error('Ошибка при оформлении заказа:', error);
             throw error;

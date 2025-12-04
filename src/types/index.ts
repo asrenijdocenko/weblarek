@@ -46,9 +46,7 @@ export interface IOrderSuccessResponse {
 }
 
 
-export interface IOrderErrorResponse {
-    error: string;
-}
 
+export type TOrderResult = IOrderSuccessResponse;
 
-export type TOrderResult = IOrderSuccessResponse | IOrderErrorResponse;
+export type TError = { [key in keyof IBuyer]?: string };
