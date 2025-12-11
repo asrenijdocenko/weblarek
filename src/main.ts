@@ -1,13 +1,16 @@
 
-import { Cart } from './components/Models/Cart';
+import { Galery } from './components/View/Galery';import { Cart } from './components/Models/Cart';
 import { ProductList } from './components/Models/ProductList';
 import { Buyer } from './components/Models/Buyer';
+import { HeaderCartCounter } from './components/View/Header';
+
 import './scss/styles.scss';
 import { apiProducts } from './utils/data';
 import { ApiClient } from './components/base/ApiClient';
 import { Api } from './components/base/Api';
 import { API_URL } from './utils/constants'; 
-import { IOrderData } from './types';
+
+
 
 
 console.log('---------------Проверка методов модели ProductList---------------');
@@ -45,7 +48,7 @@ buyerModel.saveData({
     phone: '+79999999999'
 });
 
-const emptyBuer = new Buyer;
+const emptyBuer = new Buyer();
 buyerModel.saveData({
     payment: '',
     address: '',
@@ -79,15 +82,34 @@ const apiClient = new ApiClient(api);
     })
     .catch(error => console.error('Ошибка getProductList:', error));
 
-// Тест createOrder
-const testOrder: IOrderData = {
-    payment: 'online' as const,
-    email: 'test@test.ru',
-    phone: '+79998887766',
-    address: 'Тестовый адрес',
-    total: 1450,
-    items: ['c101ab44-ed99-4a54-990d-47aa2bb4e7d9']
-};
-    
-    apiClient.createOrder(testOrder)
-        .then(result => console.log('Результат заказа:', result))
+
+
+
+
+
+// Инициализация компонентов View
+
+// проверка HeaderCartCounter
+// Инициализация компонентов
+const headerCounter = new HeaderCartCounter(document.querySelector('.header')!);
+headerCounter.render({ counter: cartModel.getTotalCount() });
+
+// Добавление товара
+cartModel.addItem(productsModel.getItems()[0]);
+headerCounter.render({ counter: cartModel.getTotalCount() });
+
+// Удаление товара
+cartModel.removeItem(productsModel.getItems()[0]);
+headerCounter.render({ counter: cartModel.getTotalCount() });
+
+// Очистка корзины
+cartModel.clearCart();
+headerCounter.render({ counter: cartModel.getTotalCount() });
+
+
+
+// проверка Galery
+const galleryContainer = document.querySelector('.galery') as HTMLElement;
+const gallery = new Galery(galleryContainer);
+
+gallery.render({ catalog: productsModel.getItems()});

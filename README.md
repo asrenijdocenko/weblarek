@@ -217,3 +217,194 @@ Presenter - презентер содержит основную логику п
     getProductList(): Promise<IProduct[]> - выполняет GET-запрос к эндпоинту /product/, возвращает Promise с массивом товаров
 
     createOrder(orderData: IOrderData): Promise<TOrderResult> - выполняет POST-запрос к эндпоинту /order/ принимает параметр orderData типа IOrderData - данные заказа возвращает Promise с результатом оформления заказа
+
+###### Классы представления
+
+Все классы представления наследуются от базового класса Component
+
+*Класс Header_cart_counter*
+
+Отвечает за взаимодействие с кнопкой корзины в хедере страницы
+
+Конструктор:
+
+    Принимает один параметр: HeaderData - объект, содержащий информацию о состоянии счетчика товаров в корзине
+
+Поля: 
+
+    counterElement: HTMLElement;
+    buttonElement: HTMLButtonElement;
+
+Методы:
+
+    set counter(value: number);
+
+*Класс Galery*
+
+Отвечает за взаимодействие со списком карточек товаров на главной странице
+
+Конструктор:
+
+    Принимает один параметр: GaleryData - объект, содержащий информацию о состоянии элементов содержащихся в каталоге
+
+Поля:
+
+    catalogElement: HTMLElement;
+
+Методы:
+
+    set catalog(item: HTMLEelement[]);
+
+
+*Класс Modal*
+
+Отвечает за отображение общего интерфейса модального окна
+
+Конструктор: 
+
+    Принимает один параметр: ModelData
+
+Поля:
+
+    close_buttonElement: HTMLButtonElement;
+    contentElement: HTMLElement;
+
+Методы: 
+
+    set content(item: HTMLElement);
+
+
+*Класс ModalSuccsess*
+
+Отвечает за отображение информаии в модальном окне успешно выполненного заказа
+
+Конструктор: 
+
+    Принимает один параметр: SuccsessData
+
+Поля:
+
+    нет полей в этом классе, т.к. нет никакого взаимодействия с пользователем
+   
+
+Методы: 
+
+    set info(item: HTMLElement)
+
+*Класс CardCatalog*
+
+Отвечает за отображение списка карточек товара
+
+Конструктор: 
+
+    Принимает один параметр: cardCatalogData 
+
+Поля:
+
+    cardButton: HTMLButtonElement;
+
+Методы: 
+
+    set cardCatalog(item: HTMLElement);
+
+*Класс ModalCardPreview*
+
+Отвечает за отображение модального окна с подробной карточкой товара
+
+Конструктор: 
+
+    Принимает один параметр: CardData;
+
+Поля:
+
+    нет полей в этом классе, т.к. нет никакого взаимодействия с пользователем
+
+Методы: 
+
+    set info(item: HTMLElement);
+
+*Класс Cart*
+
+Отвечает за отображение модального окна с корзиной
+
+Конструктор: 
+
+    Принимает один параметр: CartData
+
+Поля:
+
+    cartButton: HTMLButtonElement;
+    cartList: HTMLElement; 
+
+Методы: 
+
+    set cart(item: HTMLElement[]);
+
+*Класс ModalOrder*
+
+Отвечает за отображение модального окна с формой для информации для заказа
+
+Конструктор: 
+
+    Принимает один параметр: OrderData
+
+Поля:
+
+    orderForm: HTMLElement;
+    orderButton: HTMLButtonElement;
+
+Методы: 
+
+    set order(item: HTMLElement);
+
+*Класс ModalContacts*
+
+Отвечает за отображение модального окна с формой для контактов
+
+Конструктор: 
+
+    Принимает один параметр: 
+
+Поля:
+
+   ContactsForm: HTMLElement;
+   ContactsButton: HtmlButtonElement;
+
+Методы: 
+
+    set contacts(item: HTMLElement);
+
+
+###### Типы классов представления
+
+*Header_cart_counter*
+
+    type HeaderData = {
+        counter: number;
+    }
+
+*Galery*
+
+    type GaleryData = {
+        catalog: HTMLElement[];
+    }
+
+*Modal*
+
+    type ModalData = {
+        contentElement: HTMLElement;
+    }
+
+*ModalSuccsess*
+
+    type SuccsessData = {
+        contentElement: HTMLElement;
+    }
+
+*CardCatalog*
+
+    type cardCatalogData = {
+        catalog: HTMLElement[];
+    }
+
+**

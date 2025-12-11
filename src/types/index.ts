@@ -50,3 +50,10 @@ export interface IOrderSuccessResponse {
 export type TOrderResult = IOrderSuccessResponse;
 
 export type TError = { [key in keyof IBuyer]?: string };
+
+
+// слой View
+
+export type HeaderData = {
+    counter: number;
+}
