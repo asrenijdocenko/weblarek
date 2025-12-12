@@ -1,6 +1,7 @@
-import { IBuyer, TPayment } from "../../types";
+import { IBuyer, TPayment, TError } from "../../types";
+import { EventEmitter } from "../base/Events";
 
-class Buyer {
+class Buyer extends EventEmitter {
     protected  payment: TPayment = '';
     protected  address: string = '';
     protected  email: string = '';
@@ -11,6 +12,7 @@ class Buyer {
         if (data.address !== undefined) this.address = data.address;
         if (data.email !== undefined) this.email = data.email;
         if (data.phone !== undefined) this.phone = data.phone;
+        this.emit('buyer:changed', { data: this.getData() });
     }
 
     getData(): IBuyer {
@@ -27,25 +29,26 @@ class Buyer {
         this.address = '';
         this.email = '';
         this.phone = '';
+        this.emit('buyer:changed', { data: this.getData() });
     }
 
-    validateByerInfo(): string[] {
-        const errors: string[]= [];
+    validateData(): TError {
+        const errors: TError = {};
 
         if (!this.payment) {
-            errors.push('Не выбран способ оплаты ');
+            errors.payment = 'Не выбран способ оплаты';
         }
         
         if (!this.email) {
-            errors.push('необходимо указать email');
+            errors.email = 'Необходимо указать email';
         }
         
         if (!this.phone) {
-            errors.push('необходимо указать телефон');
+            errors.phone = 'Необходимо указать телефон';
         }
         
         if (!this.address) {
-            errors.push('необходимо указать адрес');
+            errors.address = 'Необходимо указать адрес';
         }
         
         return errors;

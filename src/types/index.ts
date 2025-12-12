@@ -57,3 +57,7 @@ export type TError = { [key in keyof IBuyer]?: string };
 export type HeaderData = {
     counter: number;
 }
+
+export type GaleryData = {
+    catalog: HTMLElement[];
+}

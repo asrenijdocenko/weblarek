@@ -14,8 +14,8 @@ export class Api {
         };
     }
 
-    protected handleResponse<T>(response: Response): Promise<T> {
-        if (response.ok) return response.json();
+    protected async handleResponse<T>(response: Response): Promise<T> {
+        if (response.ok) return await response.json();
         else return response.json()
             .then(data => Promise.reject(data.error ?? response.statusText));
     }

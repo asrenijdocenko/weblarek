@@ -1,6 +1,7 @@
 import { IProduct } from "../../types";
+import { EventEmitter } from "../base/Events";
 
-class Cart {
+class Cart extends EventEmitter {
     protected items: IProduct[] = [];
 
     getItems(): IProduct[] {
@@ -9,15 +10,20 @@ class Cart {
 
     addItem(item: IProduct): void {
         this.items.push(item);
+        this.emit('cart:changed', { items: this.items });
     }
 
     removeItem(item: IProduct): void {
         const index = this.items.findIndex(itemToRemove => itemToRemove.id === item.id);
-        this.items.splice(index, 1);
+        if (index !== -1) {
+            this.items.splice(index, 1);
+            this.emit('cart:changed', { items: this.items });
+        }
     }
 
     clearCart(): void {
         this.items = [];
+        this.emit('cart:changed', { items: this.items });
     }
 
     getTotalPrice(): number {

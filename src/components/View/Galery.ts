@@ -1,25 +1,39 @@
 import { Component } from "../base/Component";
-import { GaleryData } from "../../types";
+import { IProduct } from "../../types";
+import { CardCatalog } from "./CardCatalog";
+
+export interface GaleryData {
+    catalog: IProduct[];
+}
 
 export class Galery extends Component<GaleryData> {
-    
-    private catalog: HTMLElement;
+    private catalogElement: HTMLElement;
 
-    constructor(item: HTMLElement){
-        super(item);
-        this.catalog = this.container as HTMLElement;
+    constructor(container: HTMLElement){
+        super(container);
+        this.catalogElement = this.container as HTMLElement;
     }
 
-    public set catalogSet(items: GaleryData['catalog']) {
-        if (!this.catalog) return;
+    set catalog(items: IProduct[]) {
+        if (!this.catalogElement) return;
 
-        this.catalog.innerHTML = '';
+        this.catalogElement.innerHTML = '';
 
-        items.forEach((item) => {
-        this.catalog.appendChild(item);
+        items.forEach((product) => {
+            const cardContainer = document.createElement('button');
+            cardContainer.className = 'gallery__item';
+            const card = new CardCatalog(cardContainer);
+            const renderedCard = card.render({ product });
+            this.catalogElement.appendChild(renderedCard);
         });
+    }
+
+    render(data?: Partial<GaleryData>): HTMLElement {
+        if (data?.catalog) {
+            this.catalog = data.catalog;
         }
-    
-  }
+        return this.container;
+    }
+}
 
 
