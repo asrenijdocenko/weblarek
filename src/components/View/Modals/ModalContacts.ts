@@ -1,24 +1,22 @@
 import { FormBase } from "../FormBase";
-import { cloneTemplate } from "../../../utils/utils";
 import { IBuyer } from "../../../types";
+import { IEvents } from "../../base/Events";
 
 export interface ContactsData {
     email?: string;
     phone?: string;
     errors?: { [key in keyof IBuyer]?: string };
+    submitButtonEnabled?: boolean;
 }
 
 export class ModalContacts extends FormBase<ContactsData> {
     private emailInput: HTMLInputElement;
     private phoneInput: HTMLInputElement;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
-
-        if (!this.container.querySelector('.form')) {
-            const template = cloneTemplate<HTMLElement>('#contacts');
-            this.container.appendChild(template);
-        }
+        this.events = events;
 
         this.initializeForm();
 
@@ -29,51 +27,24 @@ export class ModalContacts extends FormBase<ContactsData> {
     protected handleSubmit(): void {
         const email = this.emailInput.value.trim();
         const phone = this.phoneInput.value.trim();
-        const errors: { [key in keyof IBuyer]?: string } = {};
-
-        if (!email) {
-            errors.email = 'Необходимо указать email';
-        }
-
-        if (!phone) {
-            errors.phone = 'Необходимо указать телефон';
-        }
-
-        if (Object.keys(errors).length > 0) {
-            this.setErrors(errors);
-            this.setButtonState(false);
-            return;
-        }
-
-        const event = new CustomEvent('contacts:submit', {
-            bubbles: true,
-            detail: {
-                email: email,
-                phone: phone
-            }
+        this.events.emit('contacts:submit', {
+            email: email,
+            phone: phone
         });
-        this.container.dispatchEvent(event);
     }
 
     protected handleInput(): void {
-        this.validateForm();
-    }
-
-    protected validateForm(): boolean {
         const email = this.emailInput.value.trim();
         const phone = this.phoneInput.value.trim();
-        const isValid = email !== '' && phone !== '';
-
-        this.setButtonState(isValid);
-        return isValid;
+        this.events.emit('contacts:field:change', { email, phone });
     }
 
     render(data?: Partial<ContactsData>): HTMLElement {
-        if (data?.email) {
+        if (data?.email !== undefined) {
             this.emailInput.value = data.email;
         }
 
-        if (data?.phone) {
+        if (data?.phone !== undefined) {
             this.phoneInput.value = data.phone;
         }
 
@@ -81,7 +52,10 @@ export class ModalContacts extends FormBase<ContactsData> {
             this.setErrors(data.errors);
         }
 
-        this.validateForm();
+        if (data?.submitButtonEnabled !== undefined) {
+            this.setButtonState(data.submitButtonEnabled);
+        }
+
         return this.container;
     }
 }

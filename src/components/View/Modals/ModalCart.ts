@@ -1,10 +1,8 @@
 import { Component } from "../../base/Component";
-import { cloneTemplate } from "../../../utils/utils";
-import { IProduct } from "../../../types";
-import { CardBasket } from "../CardBasket";
+import { IEvents } from "../../base/Events";
 
 export interface CartData {
-    items: IProduct[];
+    items: HTMLElement[];
     total: number;
 }
 
@@ -12,13 +10,11 @@ export class ModalCart extends Component<CartData> {
     private listElement: HTMLElement;
     private totalPriceElement: HTMLElement;
     private orderButton: HTMLButtonElement;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
-        if (!this.container.querySelector('.basket')) {
-            const template = cloneTemplate<HTMLElement>('#basket');
-            this.container.appendChild(template);
-        }
+        this.events = events;
 
         this.listElement = this.container.querySelector('.basket__list') as HTMLElement;
         this.totalPriceElement = this.container.querySelector('.basket__price') as HTMLElement;
@@ -26,8 +22,7 @@ export class ModalCart extends Component<CartData> {
 
         if (this.orderButton) {
             this.orderButton.addEventListener('click', () => {
-                const event = new CustomEvent('cart:order', { bubbles: true });
-                this.container.dispatchEvent(event);
+                this.events.emit('cart:order');
             });
         }
     }
@@ -41,11 +36,8 @@ export class ModalCart extends Component<CartData> {
         }
 
         this.listElement.innerHTML = '';
-        data.items.forEach((item, index) => {
-            const cardContainer = document.createElement('li');
-            const card = new CardBasket(cardContainer);
-            const renderedCard = card.render({ product: item, index });
-            this.listElement.appendChild(renderedCard);
+        data.items.forEach((element) => {
+            this.listElement.appendChild(element);
         });
 
         this.totalPriceElement.textContent = `${data.total} синапсов`;

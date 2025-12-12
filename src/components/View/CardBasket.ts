@@ -1,12 +1,27 @@
 import { CardBase, CardData } from "./CardBase";
-import { cloneTemplate } from "../../utils/utils";
+import { IEvents } from "../base/Events";
 
 export class CardBasket extends CardBase {
     protected templateId = 'card-basket';
     private deleteButton: HTMLButtonElement | null = null;
+    private indexElement: HTMLElement | null = null;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
+        this.events = events;
+
+        this.deleteButton = this.container.querySelector('.basket__item-delete') as HTMLButtonElement;
+        this.indexElement = this.container.querySelector('.basket__item-index') as HTMLElement;
+
+        if (this.deleteButton) {
+            this.deleteButton.addEventListener('click', () => {
+                const productId = this.container.dataset.id;
+                if (productId) {
+                    this.events.emit('basket:remove', { id: productId });
+                }
+            });
+        }
     }
 
     render(data?: Partial<CardData & { index: number }>): HTMLElement {
@@ -14,32 +29,12 @@ export class CardBasket extends CardBase {
             return this.container;
         }
 
-        const card = cloneTemplate<HTMLElement>(`#${this.templateId}`);
-        card.dataset.id = data.product.id;
+        this.container.dataset.id = data.product.id;
+        this.setTitle(this.container, data.product.title);
+        this.setPrice(this.container, data.product.price);
 
-        this.setTitle(card, data.product.title);
-        this.setPrice(card, data.product.price);
-
-        const indexElement = card.querySelector('.basket__item-index');
-        if (indexElement && data.index !== undefined) {
-            indexElement.textContent = String(data.index + 1);
-        }
-
-        this.container.replaceWith(card);
-        this.container = card;
-        this.deleteButton = card.querySelector('.basket__item-delete') as HTMLButtonElement;
-
-        if (this.deleteButton) {
-            this.deleteButton.addEventListener('click', () => {
-                const productId = this.container.dataset.id;
-                if (productId) {
-                    const event = new CustomEvent('basket:remove', { 
-                        bubbles: true,
-                        detail: { id: productId }
-                    });
-                    this.container.dispatchEvent(event);
-                }
-            });
+        if (this.indexElement && data.index !== undefined) {
+            this.indexElement.textContent = String(data.index + 1);
         }
 
         return this.container;

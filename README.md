@@ -110,12 +110,12 @@ Presenter - презентер содержит основную логику п
     - price: number| null - цена товара
     - description: string - развернутое описание товара
 
-*Интерфейс IBuer*
+*Интерфейс IBuyer*
 
 Описывает поля необходимые для корректной работы с данными покупателя
 
-    - payment: TPeyment - выбор способа оплаты (может принимать значения 'cash' | 'card' | '')
-    - adress: string - адресс доставки
+    - payment: TPayment - выбор способа оплаты (может принимать значения 'online' | 'offline' | '')
+    - address: string - адрес доставки
     - email: string - электронная почта покупателя
     - phone: string - телефон покупателя
 
@@ -141,19 +141,19 @@ Presenter - презентер содержит основную логику п
 
     - getItem(id: string): IProduct | undefined - возвращает товар по его ID (Если товар не найден, то возвращает undefined)
 
-    - savePreviewItem(item: IPriduct): void - сохраняет товар переданный в item в поле _previewItem для подробного просмотра
+    - savePreviewItem(item: IProduct): void - сохраняет товар переданный в item в поле _previewItem для подробного просмотра
 
     - getPreviewItem(): IProduct | null - возвращает товар полученный для подробного просмотра 
 
-*класс Cart*
+*Класс Cart*
 
-Отвечает за сохранение и управление списком товаров, которые созранены в корзину
+Отвечает за сохранение и управление списком товаров, которые сохранены в корзину
 
 Конструктор не принимает параметров
 
 Поля:
 
-    - _items: IProduct[] - защищенное поле, которое хранит массив точаров, дбавленных в корзину
+    - items: IProduct[] - защищенное поле, которое хранит массив товаров, добавленных в корзину
     
 Методы:
 
@@ -171,31 +171,33 @@ Presenter - презентер содержит основную логику п
 
     - checkItemInCart(id: string): boolean - проверяет, находится ли товар с указанным id в корзине. Возвращает true, если товар найден, и false в противном случае
 
-*класс Buyer*
+*Класс Buyer*
 
-Отвечает за хранение и валидацию данных свяханыых с покупателем
+Отвечает за хранение и валидацию данных связанных с покупателем. Наследуется от EventEmitter для генерации событий при изменении данных.
 
 Конструктор не принимает параметров
 
 Поля:
 
-    - _payment: TPayment - приватное поле, хранит способ оплаты
+    - payment: TPayment - защищенное поле, хранит способ оплаты
 
-    - _address: string - приватное поле, хранит адрес доставки
+    - address: string - защищенное поле, хранит адрес доставки
 
-    - _email: string - приватное поле, хранит электронную почту
+    - email: string - защищенное поле, хранит электронную почту
 
-    - _phone: string - приватное поле, хранит номер телефона
+    - phone: string - защищенное поле, хранит номер телефона
 
 Методы:
 
-    - saveData(): void - сохраняет данные покупателя. Принимает объект типа Partial<IBuyer>, что позволяет обновлять как все поля сразу, так и только некоторые из них, не затрагивая остальные
+    - saveData(data: Partial<IBuyer>): void - сохраняет данные покупателя. Принимает объект типа Partial<IBuyer>, что позволяет обновлять как все поля сразу, так и только некоторые из них, не затрагивая остальные. После сохранения данных вызывает валидацию и эмитит событие 'buyer:changed' с данными и ошибками валидации.
 
     - getData(): IBuyer - возвращает объект со всеми текущими данными покупателя.
 
-    - clearData(): void - очищает все данные покупателя, устанавливая все поля в пустые строки (payment в '')
+    - clearData(): void - очищает все данные покупателя, устанавливая все поля в пустые строки (payment в ''). После очистки эмитит событие 'buyer:changed'.
 
-    - validateData(): { [key in keyof IBuyer]?: string } - выполняет валидацию всех полей. Возвращает объект, в котором ключи - это названия полей (payment, address, email, phone), а значения - тексты ошибок. Если поле валидно, оно отсутствует в возвращаемом объекте
+    - validateData(): TError - выполняет валидацию всех полей (payment, address, email, phone). Возвращает объект типа TError, в котором ключи - это названия полей, а значения - тексты ошибок. Если поле валидно, оно отсутствует в возвращаемом объекте.
+
+    - validateOrderForm(): TError - выполняет валидацию только полей первой формы оформления заказа (payment и address). Возвращает объект типа TError с ошибками валидации.
 
 
 ###### Слой коммуникации
@@ -222,7 +224,46 @@ Presenter - презентер содержит основную логику п
 
 Все классы представления наследуются от базового класса Component
 
-*Класс Header_cart_counter*
+#### Базовые классы представления
+
+*Абстрактный класс CardBase*
+
+Базовый класс для всех карточек товаров. Содержит общую логику для работы с карточками.
+
+Конструктор:
+    `constructor(container: HTMLElement)` - принимает контейнер с клоном темплейта карточки
+
+Поля:
+    - `protected abstract templateId: string` - идентификатор темплейта карточки (должен быть определен в дочерних классах)
+    - `protected container: HTMLElement` - корневой DOM элемент карточки
+
+Методы:
+    - `protected setCategory(element: HTMLElement, category: string): void` - устанавливает категорию товара и соответствующий CSS класс
+    - `protected setTitle(element: HTMLElement, title: string): void` - устанавливает название товара
+    - `protected setImage(element: HTMLElement, image: string, alt: string): void` - устанавливает изображение товара с обработкой CDN URL
+    - `protected setPrice(element: HTMLElement, price: number | null): void` - устанавливает цену товара (если null, отображает "Бесценно")
+
+*Абстрактный класс FormBase<T>*
+
+Базовый класс для всех форм. Содержит общую логику для работы с формами.
+
+Конструктор:
+    `constructor(container: HTMLElement)` - принимает контейнер с формой
+
+Поля:
+    - `protected formElement: HTMLFormElement | null` - элемент формы
+    - `protected submitButton: HTMLButtonElement | null` - кнопка отправки формы
+    - `protected errorsElement: HTMLElement | null` - элемент для отображения ошибок
+    - `private initialized: boolean` - флаг инициализации формы
+
+Методы:
+    - `protected initializeForm(): void` - инициализирует форму, настраивает обработчики событий submit и input
+    - `protected abstract handleSubmit(): void` - абстрактный метод для обработки отправки формы (должен быть реализован в дочерних классах)
+    - `protected abstract handleInput(): void` - абстрактный метод для обработки ввода в поля формы (должен быть реализован в дочерних классах)
+    - `protected setErrors(errors: TError): void` - устанавливает ошибки валидации в элемент отображения ошибок
+    - `protected setButtonState(enabled: boolean): void` - устанавливает состояние кнопки отправки (enabled/disabled)
+
+*Класс HeaderCartCounter*
 
 Отвечает за взаимодействие с кнопкой корзины в хедере страницы
 
@@ -258,153 +299,183 @@ Presenter - презентер содержит основную логику п
 
 *Класс Modal*
 
-Отвечает за отображение общего интерфейса модального окна
+Отвечает за отображение общего интерфейса модального окна.
 
 Конструктор: 
-
-    Принимает один параметр: ModelData
+    `constructor(container: HTMLElement)` - принимает контейнер модального окна
 
 Поля:
-
-    close_buttonElement: HTMLButtonElement;
-    contentElement: HTMLElement;
+    - `private closeButton: HTMLButtonElement` - кнопка закрытия модального окна
+    - `private contentElement: HTMLElement` - элемент для содержимого модального окна
 
 Методы: 
+    - `set content(value: HTMLElement): void` - сеттер для установки содержимого модального окна
+    - `open(): void` - открывает модальное окно
+    - `close(): void` - закрывает модальное окно и эмитит событие 'modal:close'
+    - `render(data?: Partial<ModalData>): HTMLElement` - обновляет содержимое модального окна
 
-    set content(item: HTMLElement);
+*Класс ModalSuccess*
 
-
-*Класс ModalSuccsess*
-
-Отвечает за отображение информаии в модальном окне успешно выполненного заказа
+Отвечает за отображение информации в модальном окне успешно выполненного заказа.
 
 Конструктор: 
-
-    Принимает один параметр: SuccsessData
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер и экземпляр EventEmitter
 
 Поля:
-
-    нет полей в этом классе, т.к. нет никакого взаимодействия с пользователем
-   
+    - `private closeButton: HTMLButtonElement` - кнопка закрытия
+    - `private totalElement: HTMLElement` - элемент для отображения суммы заказа
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
-
-    set info(item: HTMLElement)
+    - `set info(data: SuccessData): void` - сеттер для установки информации о заказе
+    - `render(data?: Partial<SuccessData>): HTMLElement` - обновляет информацию о заказе
 
 *Класс CardCatalog*
 
-Отвечает за отображение списка карточек товара
+Отвечает за отображение карточки товара в каталоге. Наследуется от CardBase.
 
 Конструктор: 
-
-    Принимает один параметр: cardCatalogData 
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
 
 Поля:
-
-    cardButton: HTMLButtonElement;
+    - `protected templateId = 'card-catalog'` - идентификатор темплейта
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
+    - `render(data?: Partial<CardData>): HTMLElement` - обновляет данные карточки товара. При клике на карточку эмитит событие 'card:select' с id товара
 
-    set cardCatalog(item: HTMLElement);
+*Класс CardBasket*
+
+Отвечает за отображение карточки товара в корзине. Наследуется от CardBase.
+
+Конструктор: 
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
+
+Поля:
+    - `protected templateId = 'card-basket'` - идентификатор темплейта
+    - `private deleteButton: HTMLButtonElement | null` - кнопка удаления товара
+    - `private indexElement: HTMLElement | null` - элемент для отображения номера товара
+    - `private events: IEvents` - экземпляр EventEmitter
+
+Методы: 
+    - `render(data?: Partial<CardData & { index: number }>): HTMLElement` - обновляет данные карточки товара в корзине. При клике на кнопку удаления эмитит событие 'basket:remove' с id товара
 
 *Класс ModalCardPreview*
 
-Отвечает за отображение модального окна с подробной карточкой товара
+Отвечает за отображение модального окна с подробной карточкой товара. Наследуется от CardBase.
 
 Конструктор: 
-
-    Принимает один параметр: CardData;
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
 
 Поля:
-
-    нет полей в этом классе, т.к. нет никакого взаимодействия с пользователем
+    - `protected templateId = 'card-preview'` - идентификатор темплейта
+    - `private buttonElement: HTMLButtonElement | null` - кнопка добавления/удаления товара
+    - `private isInCart: boolean` - флаг наличия товара в корзине
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
+    - `render(data?: Partial<CardPreviewData>): HTMLElement` - обновляет данные карточки товара. При клике на кнопку эмитит событие 'card:add' или 'card:remove' в зависимости от состояния
 
-    set info(item: HTMLElement);
+*Класс ModalCart*
 
-*Класс Cart*
-
-Отвечает за отображение модального окна с корзиной
+Отвечает за отображение модального окна с корзиной.
 
 Конструктор: 
-
-    Принимает один параметр: CartData
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
 
 Поля:
-
-    cartButton: HTMLButtonElement;
-    cartList: HTMLElement; 
+    - `private listElement: HTMLElement` - элемент списка товаров
+    - `private totalPriceElement: HTMLElement` - элемент для отображения общей стоимости
+    - `private orderButton: HTMLButtonElement` - кнопка оформления заказа
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
-
-    set cart(item: HTMLElement[]);
+    - `set cart(data: CartData): void` - сеттер для установки данных корзины (массив элементов карточек и общая стоимость)
+    - `render(data?: Partial<CartData>): HTMLElement` - обновляет данные корзины
 
 *Класс ModalOrder*
 
-Отвечает за отображение модального окна с формой для информации для заказа
+Отвечает за отображение модального окна с формой оформления заказа (первый шаг). Наследуется от FormBase.
 
 Конструктор: 
-
-    Принимает один параметр: OrderData
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
 
 Поля:
-
-    orderForm: HTMLElement;
-    orderButton: HTMLButtonElement;
+    - `private paymentButtons: NodeListOf<HTMLButtonElement>` - кнопки выбора способа оплаты
+    - `private addressInput: HTMLInputElement` - поле ввода адреса
+    - `private selectedPayment: TPayment` - выбранный способ оплаты
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
-
-    set order(item: HTMLElement);
+    - `private selectPayment(type: 'card' | 'cash'): void` - обрабатывает выбор способа оплаты, эмитит событие 'order:payment:change'
+    - `protected handleSubmit(): void` - обрабатывает отправку формы, эмитит событие 'order:submit' с данными формы
+    - `protected handleInput(): void` - обрабатывает ввод в поле адреса, эмитит событие 'order:address:change'
+    - `render(data?: Partial<OrderData>): HTMLElement` - обновляет данные формы (payment, address, errors, submitButtonEnabled)
 
 *Класс ModalContacts*
 
-Отвечает за отображение модального окна с формой для контактов
+Отвечает за отображение модального окна с формой контактов (второй шаг оформления заказа). Наследуется от FormBase.
 
 Конструктор: 
-
-    Принимает один параметр: 
+    `constructor(container: HTMLElement, events: IEvents)` - принимает контейнер с клоном темплейта и EventEmitter
 
 Поля:
-
-   ContactsForm: HTMLElement;
-   ContactsButton: HtmlButtonElement;
+    - `private emailInput: HTMLInputElement` - поле ввода email
+    - `private phoneInput: HTMLInputElement` - поле ввода телефона
+    - `private events: IEvents` - экземпляр EventEmitter
 
 Методы: 
+    - `protected handleSubmit(): void` - обрабатывает отправку формы, эмитит событие 'contacts:submit' с данными формы
+    - `protected handleInput(): void` - обрабатывает ввод в поля формы, эмитит событие 'contacts:field:change'
+    - `render(data?: Partial<ContactsData>): HTMLElement` - обновляет данные формы (email, phone, errors, submitButtonEnabled)
 
-    set contacts(item: HTMLElement);
 
+###### Типы данных для классов представления
 
-###### Типы классов представления
+*HeaderCartCounter*
 
-*Header_cart_counter*
-
-    type HeaderData = {
-        counter: number;
-    }
+    `type HeaderData = { counter: number }` - данные для счетчика товаров в корзине
 
 *Galery*
 
-    type GaleryData = {
-        catalog: HTMLElement[];
-    }
+    `type GaleryData = { items: HTMLElement[] }` - данные для галереи (массив HTML элементов карточек товаров)
 
 *Modal*
 
-    type ModalData = {
-        contentElement: HTMLElement;
-    }
+    `interface ModalData { content: HTMLElement }` - данные для модального окна (содержимое)
 
-*ModalSuccsess*
+*ModalSuccess*
 
-    type SuccsessData = {
-        contentElement: HTMLElement;
-    }
+    `interface SuccessData { total: number }` - данные для модального окна успешного заказа (общая сумма)
 
 *CardCatalog*
 
-    type cardCatalogData = {
-        catalog: HTMLElement[];
-    }
+    `interface CardData { product: IProduct }` - данные для карточки товара (объект товара)
+
+*CardBasket*
+
+    `interface CardData & { index: number }` - данные для карточки товара в корзине (объект товара и его индекс)
+
+*ModalCardPreview*
+
+    `interface CardPreviewData extends CardData { isInCart: boolean }` - данные для карточки товара в превью (объект товара и флаг наличия в корзине)
+
+*ModalCart*
+
+    `interface CartData { items: HTMLElement[]; total: number }` - данные для корзины (массив HTML элементов карточек и общая стоимость)
+
+*ModalOrder*
+
+    `interface OrderData { payment?: TPayment; address?: string; errors?: TError; submitButtonEnabled?: boolean }` - данные для формы заказа
+
+*ModalContacts*
+
+    `interface ContactsData { email?: string; phone?: string; errors?: TError; submitButtonEnabled?: boolean }` - данные для формы контактов
+
+###### Типы данных для событий
+
+*IBuyerChangedEvent*
+
+    `interface IBuyerChangedEvent { data: IBuyer; orderErrors: TError; allErrors: TError }` - данные события изменения данных покупателя. Содержит текущие данные покупателя, ошибки валидации первой формы (orderErrors) и ошибки валидации всех полей (allErrors).
 
 **

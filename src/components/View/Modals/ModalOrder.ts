@@ -1,25 +1,23 @@
 import { FormBase } from "../FormBase";
-import { cloneTemplate } from "../../../utils/utils";
 import { IBuyer, TPayment } from "../../../types";
+import { IEvents } from "../../base/Events";
 
 export interface OrderData {
     payment?: TPayment;
     address?: string;
     errors?: { [key in keyof IBuyer]?: string };
+    submitButtonEnabled?: boolean;
 }
 
 export class ModalOrder extends FormBase<OrderData> {
     private paymentButtons: NodeListOf<HTMLButtonElement>;
     private addressInput: HTMLInputElement;
     private selectedPayment: TPayment = '';
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
-
-        if (!this.container.querySelector('.form')) {
-            const template = cloneTemplate<HTMLElement>('#order');
-            this.container.appendChild(template);
-        }
+        this.events = events;
 
         this.initializeForm();
 
@@ -35,79 +33,43 @@ export class ModalOrder extends FormBase<OrderData> {
     }
 
     private selectPayment(type: 'card' | 'cash'): void {
-        this.selectedPayment = type === 'card' ? 'online' : 'offline';
-        
-        this.paymentButtons.forEach(button => {
-            if (button.name === type) {
-                button.classList.add('button_alt-active');
-            } else {
-                button.classList.remove('button_alt-active');
-            }
-        });
-
-        const event = new CustomEvent('order:payment:change', {
-            bubbles: true,
-            detail: { payment: this.selectedPayment }
-        });
-        this.container.dispatchEvent(event);
-
-        this.validateForm();
+        const payment = type === 'card' ? 'online' : 'offline';
+        this.events.emit('order:payment:change', { payment });
     }
 
     protected handleSubmit(): void {
         const address = this.addressInput.value.trim();
-        const errors: { [key in keyof IBuyer]?: string } = {};
-
-        if (!this.selectedPayment) {
-            errors.payment = 'Не выбран способ оплаты';
-        }
-
-        if (!address) {
-            errors.address = 'Необходимо указать адрес доставки';
-        }
-
-        if (Object.keys(errors).length > 0) {
-            this.setErrors(errors);
-            this.setButtonState(false);
-            return;
-        }
-
-        const event = new CustomEvent('order:submit', {
-            bubbles: true,
-            detail: {
-                payment: this.selectedPayment,
-                address: address
-            }
+        this.events.emit('order:submit', {
+            payment: this.selectedPayment,
+            address: address
         });
-        this.container.dispatchEvent(event);
     }
 
     protected handleInput(): void {
-        this.validateForm();
-    }
-
-    protected validateForm(): boolean {
         const address = this.addressInput.value.trim();
-        const isValid = this.selectedPayment !== '' && address !== '';
-
-        this.setButtonState(isValid);
-        return isValid;
+        this.events.emit('order:address:change', { address });
     }
 
     render(data?: Partial<OrderData>): HTMLElement {
-        if (data?.payment) {
+        if (data?.payment !== undefined) {
             this.selectedPayment = data.payment;
-            const paymentType = data.payment === 'online' ? 'card' : 'cash';
-            this.paymentButtons.forEach(button => {
-                if (button.name === paymentType) {
-                    button.classList.add('button_alt-active');
-                } else {
+            if (data.payment) {
+                const paymentType = data.payment === 'online' ? 'card' : 'cash';
+                this.paymentButtons.forEach(button => {
+                    if (button.name === paymentType) {
+                        button.classList.add('button_alt-active');
+                    } else {
+                        button.classList.remove('button_alt-active');
+                    }
+                });
+            } else {
+                this.paymentButtons.forEach(button => {
                     button.classList.remove('button_alt-active');
-                }
-            });
+                });
+            }
         }
 
-        if (data?.address) {
+        if (data?.address !== undefined) {
             this.addressInput.value = data.address;
         }
 
@@ -115,7 +77,10 @@ export class ModalOrder extends FormBase<OrderData> {
             this.setErrors(data.errors);
         }
 
-        this.validateForm();
+        if (data?.submitButtonEnabled !== undefined) {
+            this.setButtonState(data.submitButtonEnabled);
+        }
+
         return this.container;
     }
 }

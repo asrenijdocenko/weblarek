@@ -1,5 +1,5 @@
 import { Component } from "../../base/Component";
-import { cloneTemplate } from "../../../utils/utils";
+import { IEvents } from "../../base/Events";
 
 export interface SuccessData {
     total: number;
@@ -8,21 +8,18 @@ export interface SuccessData {
 export class ModalSuccess extends Component<SuccessData> {
     private closeButton: HTMLButtonElement;
     private totalElement: HTMLElement;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
-        if (!this.container.querySelector('.order-success')) {
-            const template = cloneTemplate<HTMLElement>('#success');
-            this.container.appendChild(template);
-        }
+        this.events = events;
 
         this.closeButton = this.container.querySelector('.order-success__close') as HTMLButtonElement;
         this.totalElement = this.container.querySelector('.order-success__description') as HTMLElement;
 
         if (this.closeButton) {
             this.closeButton.addEventListener('click', () => {
-                const event = new CustomEvent('success:close', { bubbles: true });
-                this.container.dispatchEvent(event);
+                this.events.emit('success:close');
             });
         }
     }

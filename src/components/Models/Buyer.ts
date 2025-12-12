@@ -12,7 +12,15 @@ class Buyer extends EventEmitter {
         if (data.address !== undefined) this.address = data.address;
         if (data.email !== undefined) this.email = data.email;
         if (data.phone !== undefined) this.phone = data.phone;
-        this.emit('buyer:changed', { data: this.getData() });
+        
+        const orderErrors = this.validateOrderForm();
+        const allErrors = this.validateData();
+        
+        this.emit('buyer:changed', { 
+            data: this.getData(),
+            orderErrors,
+            allErrors
+        });
     }
 
     getData(): IBuyer {
@@ -29,7 +37,15 @@ class Buyer extends EventEmitter {
         this.address = '';
         this.email = '';
         this.phone = '';
-        this.emit('buyer:changed', { data: this.getData() });
+        
+        const orderErrors = this.validateOrderForm();
+        const allErrors = this.validateData();
+        
+        this.emit('buyer:changed', { 
+            data: this.getData(),
+            orderErrors,
+            allErrors
+        });
     }
 
     validateData(): TError {
@@ -45,6 +61,20 @@ class Buyer extends EventEmitter {
         
         if (!this.phone) {
             errors.phone = 'Необходимо указать телефон';
+        }
+        
+        if (!this.address) {
+            errors.address = 'Необходимо указать адрес';
+        }
+        
+        return errors;
+    }
+
+    validateOrderForm(): TError {
+        const errors: TError = {};
+
+        if (!this.payment) {
+            errors.payment = 'Не выбран способ оплаты';
         }
         
         if (!this.address) {

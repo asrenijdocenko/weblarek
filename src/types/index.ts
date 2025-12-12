@@ -51,6 +51,11 @@ export type TOrderResult = IOrderSuccessResponse;
 
 export type TError = { [key in keyof IBuyer]?: string };
 
+export interface IBuyerChangedEvent {
+    data: IBuyer;
+    orderErrors: TError;
+    allErrors: TError;
+}
 
 // слой View
 
@@ -59,5 +64,5 @@ export type HeaderData = {
 }
 
 export type GaleryData = {
-    catalog: HTMLElement[];
+    items: HTMLElement[];
 }

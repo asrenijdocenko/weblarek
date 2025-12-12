@@ -1,9 +1,7 @@
 import { Component } from "../base/Component";
-import { IProduct } from "../../types";
-import { CardCatalog } from "./CardCatalog";
 
 export interface GaleryData {
-    catalog: IProduct[];
+    items: HTMLElement[];
 }
 
 export class Galery extends Component<GaleryData> {
@@ -14,23 +12,19 @@ export class Galery extends Component<GaleryData> {
         this.catalogElement = this.container as HTMLElement;
     }
 
-    set catalog(items: IProduct[]) {
+    set items(elements: HTMLElement[]) {
         if (!this.catalogElement) return;
 
         this.catalogElement.innerHTML = '';
 
-        items.forEach((product) => {
-            const cardContainer = document.createElement('button');
-            cardContainer.className = 'gallery__item';
-            const card = new CardCatalog(cardContainer);
-            const renderedCard = card.render({ product });
-            this.catalogElement.appendChild(renderedCard);
+        elements.forEach((element) => {
+            this.catalogElement.appendChild(element);
         });
     }
 
     render(data?: Partial<GaleryData>): HTMLElement {
-        if (data?.catalog) {
-            this.catalog = data.catalog;
+        if (data?.items) {
+            this.items = data.items;
         }
         return this.container;
     }

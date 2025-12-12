@@ -1,5 +1,6 @@
 import { CardBase, CardData } from "../CardBase";
 import { cloneTemplate } from "../../../utils/utils";
+import { IEvents } from "../../base/Events";
 
 export interface CardPreviewData extends CardData {
     isInCart: boolean;
@@ -9,9 +10,11 @@ export class ModalCardPreview extends CardBase {
     protected templateId = 'card-preview';
     private buttonElement: HTMLButtonElement | null = null;
     private isInCart: boolean = false;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
+        this.events = events;
     }
 
     render(data?: Partial<CardPreviewData>): HTMLElement {
@@ -53,17 +56,9 @@ export class ModalCardPreview extends CardBase {
                 const productId = card.dataset.id;
                 if (productId) {
                     if (this.isInCart) {
-                        const event = new CustomEvent('card:remove', { 
-                            bubbles: true,
-                            detail: { id: productId }
-                        });
-                        card.dispatchEvent(event);
+                        this.events.emit('card:remove', { id: productId });
                     } else {
-                        const event = new CustomEvent('card:add', { 
-                            bubbles: true,
-                            detail: { id: productId }
-                        });
-                        card.dispatchEvent(event);
+                        this.events.emit('card:add', { id: productId });
                     }
                 }
             });

@@ -1,22 +1,18 @@
 import { CardBase, CardData } from "./CardBase";
-import { cloneTemplate } from "../../utils/utils";
+import { IEvents } from "../base/Events";
 
 export class CardCatalog extends CardBase {
     protected templateId = 'card-catalog';
-    private buttonElement: HTMLElement;
+    private events: IEvents;
 
-    constructor(container: HTMLElement) {
+    constructor(container: HTMLElement, events: IEvents) {
         super(container);
-        this.buttonElement = this.container;
+        this.events = events;
         
-        this.buttonElement.addEventListener('click', () => {
+        this.container.addEventListener('click', () => {
             const productId = this.container.dataset.id;
             if (productId) {
-                const event = new CustomEvent('card:select', { 
-                    bubbles: true,
-                    detail: { id: productId }
-                });
-                this.container.dispatchEvent(event);
+                this.events.emit('card:select', { id: productId });
             }
         });
     }
@@ -26,28 +22,11 @@ export class CardCatalog extends CardBase {
             return this.container;
         }
 
-        const card = cloneTemplate<HTMLElement>(`#${this.templateId}`);
-        card.dataset.id = data.product.id;
-
-        this.setCategory(card, data.product.category);
-        this.setTitle(card, data.product.title);
-        this.setImage(card, data.product.image, data.product.title);
-        this.setPrice(card, data.product.price);
-
-        card.addEventListener('click', () => {
-            const productId = card.dataset.id;
-            if (productId) {
-                const event = new CustomEvent('card:select', { 
-                    bubbles: true,
-                    detail: { id: productId }
-                });
-                card.dispatchEvent(event);
-            }
-        });
-
-        this.container.replaceWith(card);
-        this.container = card;
-        this.buttonElement = card;
+        this.container.dataset.id = data.product.id;
+        this.setCategory(this.container, data.product.category);
+        this.setTitle(this.container, data.product.title);
+        this.setImage(this.container, data.product.image, data.product.title);
+        this.setPrice(this.container, data.product.price);
 
         return this.container;
     }
